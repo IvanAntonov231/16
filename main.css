@@ -1,0 +1,18 @@
+.nav-item {
+    border: 1px solid darkred;
+}
+
+.nav-item-active {
+    background-color: rgb(255, 0, 0);
+}
+
+.content-item {
+    height: 50px;
+    background-color: rgb(250, 1, 1);
+    width: 300px;
+    display: none;
+}
+
+.content-item-active {
+    display: block;
+}
