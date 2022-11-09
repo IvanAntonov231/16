@@ -1,91 +1,151 @@
-class Tabs {
-    #rootEl;
-    #navElements;
-    #contentElements;
-    #activeTabIndex = 0;
+const URL = 'https://62054479161670001741b708.mockapi.io/api/todo/';
+const TODO_ITEM_SELECTOR = '.todoItem';
+const EDIT_BTN_CLASS = 'editBtn';
+const DELETE_BTN_CLASS = 'deleteBtn';
 
-    static NAV_ITEM_CLASS = 'nav-item';
-    static NAV_ITEM_ACTIVE_CLASS = 'nav-item-active';
-    static CONTENT_ITEM_CLASS = 'content-item';
-    static CONTENT_ITEM_ACTIVE_CLASS = 'content-item-active';
+const todoList = document.querySelector('#todoList');
+const input = document.querySelector('#title');
+const todoForm = document.querySelector('#todoForm');
 
-    constructor(rootEl, defaultTabIndex) {
-        this.#rootEl = rootEl;
+todoForm.addEventListener('submit', onTodoFormSubmit);
+todoList.addEventListener('click', onTodoListClick);
 
-        const [navEl, contentEl] = this.#rootEl.children;
+getTodoList()
+    .then(renderTodoList)
+    .catch(showError);
 
-        this.#navElements = Array.from(navEl.children);
-        this.#contentElements = Array.from(contentEl.children);
 
-        if (defaultTabIndex) {
-            this.#activeTabIndex = defaultTabIndex;
+function onTodoFormSubmit(e) {
+    e.preventDefault();
+
+    const todo = getTodo();
+
+    createTodo(todo)
+        .then(newTodo => {
+            renderTodoItem(newTodo);
+            clearForm();
+        })
+        .catch(showError);
+}
+
+function getTodo() {
+    return {
+        title: input.value,
+        status: false,
+    };
+}
+
+function getTodoList() {
+    return fetch(URL)
+        .then(res => res.json());
+}
+
+function createTodo(todo) {
+    return fetch(URL, {
+        method: 'POST',
+        body: JSON.stringify(todo),
+        headers: {
+            'Content-type': 'application/json',
+        },
+    })
+    .then(res => {
+        if (res.ok) {
+            return res.json();
         }
 
-        this.bindStyles();
-        this.bindEvents();
-        this.showActiveTabByIndex(this.#activeTabIndex);
-    }
+        throw new Error('Can not create new todo');
+    });
+}
 
-    bindStyles() {
-        this.#navElements.forEach(navElement => {
-            navElement.classList.add(Tabs.NAV_ITEM_CLASS);
-        });
-        this.#contentElements.forEach(contentElement => {
-            contentElement.classList.add(Tabs.CONTENT_ITEM_CLASS);
-        });
-    }
+function onTodoListClick(e) {
+    const todoItem = getTodoItem(e.target);
+    const id = todoItem.dataset.id;
+    const status = todoItem.dataset.status;
 
-    bindEvents() {
-        const [navEl] = this.#rootEl.children;
-
-        navEl.addEventListener('click', (e) => this.onNavElClick(e));
-    }
-
-
-    onNavElClick(e) {
-        const navEl = e.target;
-
-        if (navEl.classList.contains(Tabs.NAV_ITEM_CLASS)) {
-
-            const newActiveTabIndex = this.getNavItemElIndex(navEl);
-            
-            this.hideActiveTab(this.#activeTabIndex);
-            this.showActiveTabByIndex(newActiveTabIndex);
+    if (todoItem) {
+        if (e.target.classList.contains(EDIT_BTN_CLASS)) {
+            console.log('edit');
+            return;
         }
-    }
-
-    getNavItemElIndex(currentButtonEl) {
-
-        for (let i = 0; i < this.#navElements.length; i++) {
-            const buttonEl = this.#navElements[i];
-
-            if (buttonEl === currentButtonEl) {
-                return i;
-            }
+        if (e.target.classList.contains(DELETE_BTN_CLASS)) {
+            deleteTodo(id)
+                .then(() => todoItem.remove())
+                .catch(showError);
+            return;
         }
-    }
 
-    showActiveTabByIndex(index) {
-        const navElement = this.#navElements[index];
-        const contentElement = this.#contentElements[index];
-
-        navElement.classList.add(Tabs.NAV_ITEM_ACTIVE_CLASS);
-        contentElement.classList.add(Tabs.CONTENT_ITEM_ACTIVE_CLASS);
-
-        this.#activeTabIndex = index;
-    }
-
-    hideActiveTab(index) {
-
-        const navElement = this.#navElements[index];
-        const contentElement = this.#contentElements[index];
-
-        if (navElement && contentElement) {
-            navElement.classList.remove(Tabs.NAV_ITEM_ACTIVE_CLASS);
-            contentElement.classList.remove(Tabs.CONTENT_ITEM_ACTIVE_CLASS);
-        }
+        updateTodo(id, { status: !status })
+                .then(() => todoItem.classList.toggle('done'))
+                .catch(showError);
     }
 }
 
-const tabsEl = document.querySelector('#tabs');
-new Tabs(tabsEl);
+function deleteTodo(id) {
+    return fetch(URL + id, {
+        method: 'DELETE',
+    })
+    .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+
+        throw new Error(`Can not delete todo with id "${id}"`);
+    });
+}
+
+function updateTodo(id, changes) {
+    return fetch(URL + id, {
+        method: 'PUT',
+        body: JSON.stringify(changes),
+        headers: {
+            'Content-type': 'application/json',
+        },
+    })
+    .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+
+        throw new Error(`Can not update todo with id "${id}"`);
+    });
+}
+
+function getTodoItem(el) {
+    return el.closest(TODO_ITEM_SELECTOR);
+}
+
+function renderTodoList(list) {
+    const html = list.map(generateTodoHtml).join('');
+
+    todoList.innerHTML = html;
+}
+
+function renderTodoItem(todo) {
+    const todoItemTemplateHTML = generateTodoHtml(todo);
+
+    todoList.insertAdjacentHTML('beforeend', todoItemTemplateHTML);
+}
+
+function generateTodoHtml(todo) {
+    const status = todo.status ? 'done' : '';
+
+    return `
+        <li
+            class="todoItem ${status}"
+            data-id="${todo.id}"
+            data-status="${todo.status}"
+        >
+            <span>${todo.title}</span>
+            <button class="editBtn">[Edit]</button>
+            <button class="deleteBtn">[Delete]</button>
+        </li>
+    `;
+}
+
+function clearForm() {
+    todoForm.reset();
+}
+
+function showError(e) {
+    alert(e.message);
+}

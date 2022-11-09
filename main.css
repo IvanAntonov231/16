@@ -1,18 +1,26 @@
-.nav-item {
-    border: 1px solid darkred;
+.done {
+    background-color: gold;
 }
 
-.nav-item-active {
-    background-color: rgb(255, 0, 0);
+.hide {
+    display: none
 }
 
-.content-item {
-    height: 50px;
-    background-color: rgb(250, 1, 1);
-    width: 300px;
-    display: none;
+.ml10 {
+    margin-left: 10px;
 }
 
-.content-item-active {
-    display: block;
+.todoItem {
+    font: small-caps bold 20px/1 sans-serif;
+    border: solid 1px black;
+}
+
+.editBtn {
+    color: goldenrod;
+    margin-left: 10px;
+}
+
+.deleteBtn {
+    color: indianred;
+    margin-left: 10px;
 }
