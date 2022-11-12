@@ -1,19 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Home work 17</title>
-    <link rel="stylesheet" href="main.css" />
-    <script defer src="index.js"></script>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script defer src="index.js" type="module"></script>
 </head>
 <body>
-  <div>
-    
-    <form id="todoForm">
-      <input id="title" type="text" placeholder="Введите сообщение" />
-      <button>Отправить</button>
-    </form>
-    <ul id="todoList"></ul>
-  </div>
+
+<form id="contactForm">
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Surname</th>
+      <th>Phone</th>
+      <th>Action</th>
+    </tr>
+
+    <tbody id="contactList">
+
+    </tbody>
+
+    <tr>
+      <td><input type="text" name="firstName"     id="nameInput"    class="formInput" /></td>
+      <td><input type="text" name="lastName"      id="surnameInput" class="formInput" /></td>
+      <td><input type="text" name="phone"         id="phoneInput"   class="formInput" /></td>
+      <td><button id="addContactBtn">Create contact</button></td>
+    </tr>
+  </table>
+</form>
+
+<script id="contactItemTemplate" type="text/template">
+  <tr data-id="{{id}}" class="contactItem">
+    <td>{{firstName}}</td>
+    <td>{{lastName}}</td>
+    <td>{{phone}}</td>
+    <td>
+      <button type="button" class="editBtn">Edit</button>
+      <button type="button" class="deleteBtn">Delete</button>
+    </td>
+  </tr>
+</script>
+
 </body>
 </html>
